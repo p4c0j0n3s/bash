@@ -1,19 +1,36 @@
-i=1
-paste f1 f2 -d ";" | 
-while read -r LINE || [ -n "$LINE" ]; do
+tam1=$(wc -l $1 | awk '{print $1}')
+tam2=$(wc -l $2 | awk '{print $1}')
 
-    n1=$( echo "$LINE" | cut -d ";" -f1)
-    n2=$( echo "$LINE" | cut -d ";" -f2)
+echo "Size of: "$1 "=" $tam1 
+echo "Size of: "$2 "=" $tam2
 
-    diff=$( echo $n1 - $n2 | bc)
+if [ $tam1 -ne $tam2 ] ; then
+    echo "ERROR: the files don't have the same size."
+else
+    i=1
+    paste $1 $2 -d ";" | 
+    while read -r LINE || [ -n "$LINE" ]; do
 
-    c=0.001
-    if [ $(echo "$diff>$c" | bc ) -eq 1 ] ; then 
-    	echo $i": NO --> " $diff
-    elif [ $(echo "$diff<$c" | bc) -eq 1 ]; then
-        echo $i": NO --> " $diff
-    else
-  	echo "SI --> " $diff
-    fi
-    i=$(($i+1))
-done
+	na=$( echo "$LINE" | cut -d ";" -f1)
+	nb=$( echo "$LINE" | cut -d ";" -f2)
+ 
+	if [ na > nb ] ; then
+	    n1=$na
+	    n2=$nb
+	else
+	    n1=$nb
+	    n2=$n1
+	fi
+
+	diff=$( echo $n1 - $n2 | bc)
+	tol=0.01
+	echo "diff: "$diff" > tol: "$tol
+	if [ $(echo "$diff>$tol" | bc ) -eq 1 ] ; then 
+	    echo $i": NO --> " $diff
+	else
+	    echo "OK --> " $diff
+	fi
+	i=$(($i+1))
+    done
+fi
+
